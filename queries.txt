@@ -1,0 +1,77 @@
+.output select.txt
+SELECT count(*) FROM(
+SELECT * FROM frequency
+WHERE docid = "10398_txt_earn"
+)x;
+
+
+.output select_project.txt
+
+SELECT count(*)    FROM(
+SELECT term FROM frequency
+    WHERE docid = "10398_txt_earn" AND count=1)x;
+    
+.output union.txt  
+SELECT count(*) FROM(  
+SELECT term FROM frequency
+    WHERE docid = "10398_txt_earn" AND count=1
+UNION 
+SELECT term FROM frequency
+    WHERE docid = "925_txt_trade" AND count=1)x;
+
+.output count.txt
+SELECT count(*) FROM(
+SELECT DISTINCT docid FROM frequency
+    WHERE term = "parliament")x;
+
+.output big_documents.txt
+SELECT count(*) FROM(
+SELECT docid, SUM(count) FROM frequency
+GROUP BY docid
+HAVING SUM(count) > 300)x;
+
+.output two_words.txt
+SELECT count(*) FROM(
+SELECT docid FROM frequency 
+WHERE term = "transaction"
+INTERSECT
+SELECT docid FROM frequency
+WHERE term = "world")x;
+
+.output similarity_matrix.txt
+SELECT SUM(a.count * b.count)
+FROM frequency as a, frequency as b
+WHERE a.term = b.term AND  a.docid = "10080_txt_crude" AND b.docid = "17035_txt_earn"
+GROUP BY a.docid, b.docid;
+
+.output keyword_search.txt
+SELECT adoc, MAX(sth) FROM(
+SELECT a.docid as adoc, b.docid, SUM(a.count * b.count) as sth
+FROM 
+(
+SELECT * FROM frequency
+UNION
+SELECT 'q' as docid, 'washington' as term, 1 as count 
+UNION
+SELECT 'q' as docid, 'taxes' as term, 1 as count
+UNION 
+SELECT 'q' as docid, 'treasury' as term, 1 as count
+)
+as a,
+(
+SELECT * FROM frequency
+UNION
+SELECT 'q' as docid, 'washington' as term, 1 as count 
+UNION
+SELECT 'q' as docid, 'taxes' as term, 1 as count
+UNION 
+SELECT 'q' as docid, 'treasury' as term, 1 as count
+)
+as b
+WHERE a.term = b.term AND B.docid = 'q'
+GROUP BY a.docid, b.docid)
+;
+
+
+
+
